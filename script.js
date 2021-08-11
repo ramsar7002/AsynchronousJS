@@ -85,7 +85,108 @@ const findLocation = loc => {
     .then(data => getCountriesNewerWay(data.country));
 };
 
-const loc = navigator.geolocation.getCurrentPosition(findLocation, () =>
-  console.log('cant')
-);
-const whereAmI = (lat, lng) => {};
+//const loc = navigator.geolocation.getCurrentPosition(findLocation, () =>
+//  console.log('cant')
+//);
+const whereAmI = ()=>{
+  getPosition().then(res=>findLocation(res));
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//The Event Loop in Practice
+//Always: Regular functions -> Promises -> Events(dom events)
+//console.log('Test start');
+setTimeout(() => {
+  //console.log('0 sec timer');
+}, 0);
+//Promise.resolve('Resolved promise 1').then(res=>console.log(res))
+
+Promise.resolve('Resolved promise 2'). then(res=>{
+  for(let i=0; i<100000000; i++){
+    i=i;
+  }
+
+  //console.log(res);
+})
+//console.log('Test end');
+
+
+////////////////////////////////////////////////////////////////////////
+//building a simple promise
+/*
+const lotteryPromise = new Promise(function(resolve, reject){
+  console.log('Lottery draw is happening')
+  setTimeout(() => {
+    if(Math.random()>=0.5){
+      resolve('You win!');
+    }
+    else{
+      reject(new Error('You lost your money'));
+    }
+  }, 2000);
+});
+
+//lotteryPromise.then(res=> console.log(res)).catch(err=>console.error(err.message))
+*/
+
+
+
+////////////////////////////////////////////////////////////////////////
+//Promisifying setTimeout
+/*
+const wait = function(seconds){
+  return new Promise((resolve)=>setTimeout(resolve, seconds*1000))
+}
+
+wait(2).then(()=>{
+  console.log('I waited for 2 seconds')
+  return wait(1)
+}).then(()=> console.log('i waited for 1 second'));
+
+Promise.resolve('abc').then(res=>console.log(res));
+Promise.reject('abc').catch(err=>new Error(err));
+*/
+
+
+
+////////////////////////////////////////////////////////////////////////
+//Promisifying the Geolocation API
+
+const getPosition= function(){
+  return new Promise(function(resolve, reject){
+    //navigator.geolocation.getCurrentPosition(position=>resolve(position), err=> reject(err));
+    navigator.geolocation.getCurrentPosition(resolve, reject)
+  });
+}
+//whereAmI();
+
+const wait = function(seconds){
+  return new Promise((resolve)=>setTimeout(resolve, seconds*1000))
+}
+const imgContainer = document.querySelector('.images');
+const createImage = (imgPath)=>{
+  return new Promise(function(resolve,reject){
+    const img = document.createElement('img');
+    img.src=imgPath;
+
+    img.addEventListener('load',()=>{
+      imgContainer.append(img);
+      resolve(img)
+    });
+
+    img.addEventListener('error',()=>{
+      reject(new Error('Image not found'))
+    })
+  });
+};
+
+let currentImg;
+createImage('https://ec.europa.eu/programmes/horizon2020/sites/default/files/newsroom/29_05_17_small_22078.jpg').then(img=>{
+  currentImg=img;
+  console.log('Image 1 loaded');
+  return wait(2)
+}).then(()=>{
+  currentImg.style.display='none';
+  return createImage('https://img.jakpost.net/c/2020/05/01/2020_05_01_94194_1588330417._large.jpg')
+}).catch(err=>console.log(err));
