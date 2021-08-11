@@ -197,12 +197,31 @@ createImage('https://ec.europa.eu/programmes/horizon2020/sites/default/files/new
 
 //Consuming Promises with Async/Await
 const whereAmI = async function(country){
-  await navigator.geolocation.getCurrentPosition();
   const res = await fetch(`https://restcountries.eu/rest/v2/name/${country}`);
+  
   const [data] = await res.json();
+  console.log(data)
   renderCountry(data);
   countriesContainer.style.opacity = 1;
+
+  return `${data.name} calling code is ${data.callingCodes[0]}.`
 }
 //whereAmI('israel');
 
 //Try / catch
+/*
+try{
+  let y=1;
+  const x=2;
+  x=y;
+}catch(err){
+  console.log(err.message)
+}
+*/
+
+////////////////////////////////////////////////////////////////////////
+//Returning Values from Async Functions
+console.log('1');
+let locationMessage;
+whereAmI('israel').then(res=>console.log(res)).then();
+console.log('2');
