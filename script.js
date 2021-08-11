@@ -88,9 +88,11 @@ const findLocation = loc => {
 //const loc = navigator.geolocation.getCurrentPosition(findLocation, () =>
 //  console.log('cant')
 //);
+/*
 const whereAmI = ()=>{
   getPosition().then(res=>findLocation(res));
 }
+*/
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -161,6 +163,7 @@ const getPosition= function(){
 }
 //whereAmI();
 
+/*
 const wait = function(seconds){
   return new Promise((resolve)=>setTimeout(resolve, seconds*1000))
 }
@@ -190,3 +193,16 @@ createImage('https://ec.europa.eu/programmes/horizon2020/sites/default/files/new
   currentImg.style.display='none';
   return createImage('https://img.jakpost.net/c/2020/05/01/2020_05_01_94194_1588330417._large.jpg')
 }).catch(err=>console.log(err));
+*/
+
+//Consuming Promises with Async/Await
+const whereAmI = async function(country){
+  await navigator.geolocation.getCurrentPosition();
+  const res = await fetch(`https://restcountries.eu/rest/v2/name/${country}`);
+  const [data] = await res.json();
+  renderCountry(data);
+  countriesContainer.style.opacity = 1;
+}
+//whereAmI('israel');
+
+//Try / catch
