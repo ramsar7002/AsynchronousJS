@@ -74,6 +74,18 @@ const getCountriesNewerWay = country => {
 };
 
 let country = 'france';
-btn.addEventListener('click', () => {
+btn?.addEventListener('click', () => {
   getCountriesNewerWay(country);
 });
+
+const findLocation = loc => {
+  const { latitude, longitude } = loc.coords;
+  fetch(`https://geocode.xyz/${latitude},${longitude}?geoit=json`)
+    .then(res => res.json())
+    .then(data => getCountriesNewerWay(data.country));
+};
+
+const loc = navigator.geolocation.getCurrentPosition(findLocation, () =>
+  console.log('cant')
+);
+const whereAmI = (lat, lng) => {};
