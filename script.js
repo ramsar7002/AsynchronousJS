@@ -94,7 +94,6 @@ const whereAmI = ()=>{
 }
 */
 
-
 ////////////////////////////////////////////////////////////////////////
 //The Event Loop in Practice
 //Always: Regular functions -> Promises -> Events(dom events)
@@ -104,15 +103,14 @@ setTimeout(() => {
 }, 0);
 //Promise.resolve('Resolved promise 1').then(res=>console.log(res))
 
-Promise.resolve('Resolved promise 2'). then(res=>{
-  for(let i=0; i<100000000; i++){
-    i=i;
+Promise.resolve('Resolved promise 2').then(res => {
+  for (let i = 0; i < 100000000; i++) {
+    i = i;
   }
 
   //console.log(res);
-})
+});
 //console.log('Test end');
-
 
 ////////////////////////////////////////////////////////////////////////
 //building a simple promise
@@ -132,8 +130,6 @@ const lotteryPromise = new Promise(function(resolve, reject){
 //lotteryPromise.then(res=> console.log(res)).catch(err=>console.error(err.message))
 */
 
-
-
 ////////////////////////////////////////////////////////////////////////
 //Promisifying setTimeout
 /*
@@ -150,17 +146,15 @@ Promise.resolve('abc').then(res=>console.log(res));
 Promise.reject('abc').catch(err=>new Error(err));
 */
 
-
-
 ////////////////////////////////////////////////////////////////////////
 //Promisifying the Geolocation API
 
-const getPosition= function(){
-  return new Promise(function(resolve, reject){
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
     //navigator.geolocation.getCurrentPosition(position=>resolve(position), err=> reject(err));
-    navigator.geolocation.getCurrentPosition(resolve, reject)
+    navigator.geolocation.getCurrentPosition(resolve, reject);
   });
-}
+};
 //whereAmI();
 
 /*
@@ -196,16 +190,16 @@ createImage('https://ec.europa.eu/programmes/horizon2020/sites/default/files/new
 */
 
 //Consuming Promises with Async/Await
-const whereAmI = async function(country){
+const whereAmI = async function (country) {
   const res = await fetch(`https://restcountries.eu/rest/v2/name/${country}`);
-  
+
   const [data] = await res.json();
-  console.log(data)
+  console.log(data);
   renderCountry(data);
   countriesContainer.style.opacity = 1;
 
-  return `${data.name} calling code is ${data.callingCodes[0]}.`
-}
+  return `${data.name} calling code is ${data.callingCodes[0]}.`;
+};
 //whereAmI('israel');
 
 //Try / catch
@@ -221,7 +215,86 @@ try{
 
 ////////////////////////////////////////////////////////////////////////
 //Returning Values from Async Functions
+/*
 console.log('1');
 let locationMessage;
 whereAmI('israel').then(res=>console.log(res)).then();
 console.log('2');
+*/
+
+////////////////////////////////////////////////////////////////////////
+//Running Promises in Parallel
+//Uncorrect way
+/*
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    const [data1] = await fetchData(
+      `https://restcountries.eu/rest/v2/name/${c1}`
+    );
+    const [data2] = await fetchData(
+      `https://restcountries.eu/rest/v2/name/${c2}`
+    );
+    const [data3] = await fetchData(
+      `https://restcountries.eu/rest/v2/name/${c3}`
+    );
+    console.log([data1.capital, data2.capital, data3.capital]);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+*/
+
+//Better way
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    const data = await Promise.all([
+      fetchData(`https://restcountries.eu/rest/v2/name/${c1}`),
+      fetchData(`https://restcountries.eu/rest/v2/name/${c2}`),
+      fetchData(`https://restcountries.eu/rest/v2/name/${c3}`),
+    ]);
+    console.log(data.map(d => d[0].capital));
+  } catch (err) {}
+};
+//get3Countries('Israel', 'france', 'spain');
+
+////////////////////////////////////////////////////////////////////////
+//Other Promise Combinators: race, allSettled and any
+
+//Promise.race
+(async function () {
+  let res = await Promise.race([
+    fetchData(`https://restcountries.eu/rest/v2/name/israel`),
+    fetchData(`https://restcountries.eu/rest/v2/name/france`),
+    fetchData(`https://restcountries.eu/rest/v2/name/italy`),
+  ]);
+  //console.log(res[0]);
+})();
+
+const timeout = function (s) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('request took too long'));
+    }, s * 1000);
+  });
+};
+(async function () {
+  const res = await Promise.race([
+    fetchData(`https://restcountries.eu/rest/v2/name/israel`),
+    timeout(0.3),
+  ]);
+  //console.log(res[0]);
+})();
+
+//Promise.allSetteled
+Promise.allSettled([
+  Promise.resolve('success'),
+  Promise.reject('Error'),
+  Promise.resolve('Another success'),
+]).then(res => console.log(res));
+
+// Promise.any
+Promise.any([
+  Promise.resolve('success'),
+  Promise.reject('Error'),
+  Promise.resolve('Another success'),
+]).then(res => console.log(res));
