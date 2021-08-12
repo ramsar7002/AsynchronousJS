@@ -157,27 +157,27 @@ const getPosition = function () {
 };
 //whereAmI();
 
-/*
-const wait = function(seconds){
-  return new Promise((resolve)=>setTimeout(resolve, seconds*1000))
-}
+const wait = function (seconds) {
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+};
 const imgContainer = document.querySelector('.images');
-const createImage = (imgPath)=>{
-  return new Promise(function(resolve,reject){
+const createImage = imgPath => {
+  return new Promise(function (resolve, reject) {
     const img = document.createElement('img');
-    img.src=imgPath;
+    img.src = imgPath;
 
-    img.addEventListener('load',()=>{
+    img.addEventListener('load', () => {
       imgContainer.append(img);
-      resolve(img)
+      resolve(img);
     });
 
-    img.addEventListener('error',()=>{
-      reject(new Error('Image not found'))
-    })
+    img.addEventListener('error', () => {
+      reject(new Error('Image not found'));
+    });
   });
 };
 
+/*
 let currentImg;
 createImage('https://ec.europa.eu/programmes/horizon2020/sites/default/files/newsroom/29_05_17_small_22078.jpg').then(img=>{
   currentImg=img;
@@ -274,7 +274,7 @@ const timeout = function (s) {
   return new Promise(function (_, reject) {
     setTimeout(function () {
       reject(new Error('request took too long'));
-    }, s * 1000);
+    }, s * 3000);
   });
 };
 (async function () {
@@ -298,3 +298,43 @@ Promise.any([
   Promise.reject('Error'),
   Promise.resolve('Another success'),
 ]).then(res => console.log(res));
+
+//Practice
+
+const loadNPause = async function () {
+  try {
+    const img = await createImage(
+      'https://ggsc.s3.amazonaws.com/images/made/images/uploads/The_Science-Backed_Benefits_of_Being_a_Dog_Owner_300_200_int_c1-1x.jpg'
+    );
+    console.log('image 1 loaded');
+    await wait(2);
+    img.style.display = 'none';
+    img = await createImage(
+      'https://www.sciencemag.org/sites/default/files/styles/article_main_image_-_1280w__no_aspect_/public/dogs_1280p_0.jpg?itok=g-iie0F-'
+    );
+    await wait(2);
+    img.style.display = 'none';
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+//loadNPause();
+
+const loadAll = async imgArr => {
+  try {
+    const imgs = imgArr.map(async img => await createImage(img));
+    //console.log(imgs);
+    const imgsEL = await Promise.all(imgs);
+    console.log(imgsEL);
+    imgsEL.forEach(img => img.classList.add('parallel'));
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
+const imgArr = [
+  'https://ggsc.s3.amazonaws.com/images/made/images/uploads/The_Science-Backed_Benefits_of_Being_a_Dog_Owner_300_200_int_c1-1x.jpg',
+  'https://www.sciencemag.org/sites/default/files/styles/article_main_image_-_1280w__no_aspect_/public/dogs_1280p_0.jpg?itok=g-iie0F-',
+  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg?w=136&h=136',
+];
+loadAll(imgArr);
